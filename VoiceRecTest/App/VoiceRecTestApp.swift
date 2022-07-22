@@ -15,6 +15,8 @@ struct VoiceRecTestApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                // always use dark mode
+                .preferredColorScheme(.dark)
         }
     }
 }

@@ -24,6 +24,7 @@ class AudioPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
             
             do {
                 try playbackSession.setCategory(AVAudioSession.Category.playback, mode: AVAudioSession.Mode.spokenAudio)
+                try playbackSession.setActive(true)
                 print("Start Recording - Playback session setted")
             } catch {
                 print("Play Recording - Failed to set up playback session")
@@ -65,7 +66,7 @@ class AudioPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
     
     func stopPlayback() {
-        if audioPlayer?.isPlaying ?? false {
+        if audioPlayer != nil {
             audioPlayer?.stop()
             isPlaying = false
             print("Play Recording - Stopped")

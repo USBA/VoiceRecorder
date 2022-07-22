@@ -34,30 +34,25 @@ struct PlayerBar: View {
                 HStack {
                     Text(DateComponentsFormatter.positional.string(from: player.currentTime) ?? "0:00")
                     Spacer()
-                    Text(DateComponentsFormatter.positional.string(from: (player.currentTime - player.duration) ) ?? "0:00")
+                    Text("-\(DateComponentsFormatter.positional.string(from: (player.duration - player.currentTime) ) ?? "0:00")")
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
                 
                 HStack(spacing: 15) {
-                    if self.audioPlayer.isPlaying {
-                        // Pause Button
-                        Button(action: {
-                            self.audioPlayer.pausePlayback()
-                        }) {
-                            Image(systemName: "pause.fill")
-                                .font(.title2)
-                                .imageScale(.large)
+                    // Play/Pause Button
+                    Button {
+                        if audioPlayer.isPlaying {
+                            // Pause
+                            audioPlayer.pausePlayback()
+                        } else {
+                            // Play
+                            audioPlayer.resumePlayback()
                         }
-                    } else {
-                        // Resume Button
-                        Button(action: {
-                            self.audioPlayer.resumePlayback()
-                        }) {
-                            Image(systemName: "play.fill")
-                                .font(.title2)
-                                .imageScale(.large)
-                        }
+                    } label: {
+                        Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.title2)
+                            .imageScale(.large)
                     }
                     
                     // Recording name
@@ -68,10 +63,9 @@ struct PlayerBar: View {
                     Spacer()
                     
                     // Stop button
-                    Button(action: {
-                        self.audioPlayer.stopPlayback()
-                        sliderValue = 0
-                    }) {
+                    Button {
+                        audioPlayer.stopPlayback()
+                    } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title2)
                             .imageScale(.large)
@@ -83,8 +77,11 @@ struct PlayerBar: View {
             }
             .padding()
             .foregroundColor(.primary)
+            .onAppear {
+                sliderValue = 0
+            }
             .onReceive(timer) { _ in
-                guard let player = self.audioPlayer.audioPlayer, !isDragging else { return }
+                guard let player = audioPlayer.audioPlayer, !isDragging else { return }
                 sliderValue = player.currentTime
             }
             .transition(.scale(scale: 0, anchor: .bottom))

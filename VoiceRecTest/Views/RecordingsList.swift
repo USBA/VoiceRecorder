@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import AVFoundation
 
 struct RecordingsList: View {
     @Environment(\.managedObjectContext) private var moc
@@ -44,10 +45,23 @@ struct RecordingRow: View {
     @ObservedObject var audioPlayer: AudioPlayer
     var recording: Recording
     
+    var isPlayingThisRecording: Bool {
+        audioPlayer.currentlyPlaying?.id == recording.id
+    }
+    
     var body: some View {
         HStack {
-            Text(recording.name ?? "Recording")
-                .fontWeight(audioPlayer.currentlyPlaying?.id == recording.id ? .bold : .regular)
+            VStack(alignment: .leading) {
+                Text(recording.name ?? "Recording")
+                    .fontWeight(isPlayingThisRecording ? .bold : .regular)
+                Group {
+                    if let recordingData = recording.recordingData, let duration = getDuration(of: recordingData) {
+                        Text(DateComponentsFormatter.positional.string(from: duration) ?? "0:00")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
             Spacer()
             Button {
                 audioPlayer.startPlayback(recording: recording)
@@ -57,7 +71,16 @@ struct RecordingRow: View {
                     .symbolRenderingMode(.palette)
                     .foregroundStyle(.primary, .tertiary)
             }
-
+        }
+        .tint(isPlayingThisRecording ? .green : .blue)
+    }
+    
+    func getDuration(of recordingData: Data) -> TimeInterval? {
+        do {
+            return try AVAudioPlayer(data: recordingData).duration
+        } catch {
+            print("Failed to get the duration for recording on the list: Recording Name - \(recording.name ?? "")")
+            return nil
         }
     }
 }
